@@ -11,7 +11,5 @@ This script do:
   
 - Exclude some VHDX not needed (variable)
 
-- Check the fragmented level of each VHDX
-
-- Mount, defrag and optimize if fragmented leveil is high (variable)
+- Mount, Defrag and Optimize if fragmented level is high (variable)
   
