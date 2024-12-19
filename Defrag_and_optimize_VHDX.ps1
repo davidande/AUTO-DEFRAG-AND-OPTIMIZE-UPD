@@ -31,6 +31,7 @@ $VHDXPROP = Get-VHD $VHDX -ErrorAction Ignore
     $VHDXDEFRAG = $VHDXPROP.FragmentationPercentage
     if ($VHDXDEFRAG -igt $VHDXfragmax){
     mount-VHD $VHDX
+    write-host traitement de $VHDX
     Start-Sleep -Seconds 3
     $Drivebrut= Get-Partition (Get-DiskImage -ImagePath $VHDX).number | Get-Volume
     $Drivefinal = $Drivebrut.DriveLetter + ':'
