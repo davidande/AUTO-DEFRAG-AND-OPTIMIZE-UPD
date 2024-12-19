@@ -1,3 +1,4 @@
+# script provenant de : https://github.com/davidande/AUTO-DEFRAG-AND-OPTIMIZE-UPD
 <# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
 
 # Pour une éxécution depuis un serveur
@@ -31,7 +32,7 @@ $VHDXPROP = Get-VHD $VHDX -ErrorAction Ignore
     $VHDXDEFRAG = $VHDXPROP.FragmentationPercentage
     if ($VHDXDEFRAG -igt $VHDXfragmax){
     mount-VHD $VHDX
-    write-host traitement de $VHDX
+    write-host "Traitement de" $VHDX -ForegroundColor Cyan
     Start-Sleep -Seconds 3
     $Drivebrut= Get-Partition (Get-DiskImage -ImagePath $VHDX).number | Get-Volume
     $Drivefinal = $Drivebrut.DriveLetter + ':'
@@ -42,6 +43,10 @@ $VHDXPROP = Get-VHD $VHDX -ErrorAction Ignore
     dismount-vhd $VHDX
     Start-Sleep -Seconds 3
     optimize-vhd $VHDX -Mode Full
+    write-host "Le disque" $VHDX "a été optimisé" -ForegroundColor Cyan
+    }
+    else {
+    write-host "Le disque" $VHDX "n'est pas assez fragmenté pour être traité" -ForegroundColor Green
     }
 }
 exit
