@@ -1,9 +1,9 @@
 <# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
 
 # Pour une éxécution depuis un serveur
-$fonctionnalite = Get-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
+$fonctionnalite = Get-WindowsFeature -Name Hyper-V-PowerShell
 if (-not $feature.Installed) {
-    Install-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
+    Install-WindowsFeature -Name Hyper-V-PowerShell
 }
 
 # Pour une execution depuis un poste
