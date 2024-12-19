@@ -1,8 +1,17 @@
-# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
+<# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
+
+# Pour une éxécution depuis un serveur
 $fonctionnalite = Get-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
 if (-not $feature.Installed) {
     Install-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
 }
+
+# Pour une execution depuis un poste
+$feature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Management-PowerShell
+if ($feature.State -ne 'Enabled') {
+    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Management-PowerShell -All
+}
+#>
 
 # Chemin des VHDX
 $VHDXPath = '\\localhost\users_profils$'
