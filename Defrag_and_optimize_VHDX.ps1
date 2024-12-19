@@ -1,16 +1,19 @@
-# avant toute chose ildfaut installer le module Hyper-v Powershell si ce n'est pas déja fait
-# Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Management-PowerShell 
+# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
+$fonctionnalite = Get-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
+if (-not $feature.Installed) {
+    Install-WindowsFeature -Name Microsoft-Hyper-V-Management-PowerShell
+}
 
-# chemin des VHDX
+# Chemin des VHDX
 $VHDXPath = '\\localhost\users_profils$'
  
- # VHDX à exclure             
+# VHDX à exclure             
 $VHDXExclusion = 'UVHD-template.vhdx'
 
-# pourcentage de fragmentation max avant action
+# Pourcentage de fragmentation max avant action
 $VHDXfragmax = 10
 
-# traitement
+# Traitement
 $VHDXS = Get-ChildItem $VHDXPath -Recurse -Filter *.vhdx | Where-Object {$_.name -NotContains $VHDXExclusion} | Select-Object -ExpandProperty fullname
 
 foreach ($VHDX in $VHDXS){
