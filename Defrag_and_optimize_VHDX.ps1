@@ -2,20 +2,32 @@
 # Script provenant de : https://github.com/davidande/AUTO-DEFRAG-AND-OPTIMIZE-UPD #
 ###################################################################################
 
-<# Vérification et installation si besoin des cmdlets Hyper-V (fonctionnalité Windows)
+# Vérifier la version du système d'exploitation
+$osVersion = (Get-WmiObject Win32_OperatingSystem).Version
 
-# Pour une éxécution depuis un serveur
-$fonctionnalite = Get-WindowsFeature -Name Hyper-V-PowerShell
-if (-not $feature.Installed) {
-    Install-WindowsFeature -Name Hyper-V-PowerShell
+# Fonction pour installer les fonctionnalités Hyper-V
+function Install-HyperVFeatures {
+    param (
+        [string]$FeatureName
+    )
+
+    $feature = Get-WindowsFeature -Name $FeatureName
+    if (-not $feature.Installed) {
+        Write-Host "Installation de la fonctionnalité $FeatureName..." -ForegroundColor Cyan
+        Install-WindowsFeature -Name $FeatureName -IncludeManagementTools
+    } else {
+        Write-Host "La fonctionnalité $FeatureName est déjà installée." -ForegroundColor Green
+    }
 }
 
-# Pour une execution depuis un poste
-$feature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Management-PowerShell
-if ($feature.State -ne 'Enabled') {
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-Management-PowerShell -All
+# Installation des fonctionnalités Hyper-V en fonction de la version du système
+if ($osVersion -ge "6.3") { # Windows Server 2012 R2 et versions ultérieures
+    Install-HyperVFeatures -FeatureName "Hyper-V"
+    Install-HyperVFeatures -FeatureName "Hyper-V-PowerShell"
+} else {
+    Write-Host "La version du système d'exploitation n'est pas supportée pour l'installation automatique des fonctionnalités Hyper-V." -ForegroundColor Red
+    exit 1
 }
-#>
 
 # Chemin des VHDX
 $VHDXPath = '\\serveur-appli\users_profils$'
