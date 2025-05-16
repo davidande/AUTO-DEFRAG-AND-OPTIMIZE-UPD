@@ -18,41 +18,52 @@ if ($feature.State -ne 'Enabled') {
 #>
 
 # Chemin des VHDX
-$VHDXPath = '\\localhost\users_profils$'
- 
-# VHDX à exclure             
+$VHDXPath = '\\serveur-appli\users_profils$'
+
+# VHDX à exclure
 $VHDXExclusion = 'UVHD-template.vhdx'
 
 # Pourcentage de fragmentation max avant action
-$VHDXfragmax = 10
+$VHDXfragmax = 0
 
 # Traitement
 $VHDXS = Get-ChildItem $VHDXPath -Recurse -Filter *.vhdx | Where-Object {$_.name -NotContains $VHDXExclusion} | Select-Object -ExpandProperty fullname
 
-foreach ($VHDX in $VHDXS) 
-{
-$VHDXPROP = Get-VHD $VHDX -ErrorAction Ignore
-    
+foreach ($VHDX in $VHDXS) {
+    $VHDXPROP = Get-VHD $VHDX -ErrorAction Ignore
+
     $VHDXDEFRAG = $VHDXPROP.FragmentationPercentage
-    if ($VHDXDEFRAG -igt $VHDXfragmax)
-    {
-    mount-VHD $VHDX
-    write-host "Traitement de" $VHDX -ForegroundColor Cyan
-    Start-Sleep -Seconds 3
-    $Drivebrut= Get-Partition (Get-DiskImage -ImagePath $VHDX).number | Get-Volume
-    $Drivefinal = $Drivebrut.DriveLetter + ':'
-    defrag $Drivefinal /h /x
-    defrag $Drivefinal /h /k /l
-    defrag $Drivefinal /h /x
-    defrag $Drivefinal /h /k
-    dismount-vhd $VHDX
-    Start-Sleep -Seconds 3
-    optimize-vhd $VHDX -Mode Full
-    write-host "Le disque" $VHDX "a été optimisé" -ForegroundColor Cyan
+
+    # Vérifier si le VHD est déjà monté ou utilisé
+    $isMounted = Get-Disk | Where-Object { $_.Path -eq $VHDX }
+    $isUsed = Test-Path $VHDX -PathType Leaf
+
+    if ($isMounted -or (-not $isUsed)) {
+        Write-Host "Le disque $VHDX est déjà monté ou utilisé par un autre processus. Passage au suivant..." -ForegroundColor Yellow
+        continue
     }
-    else
-    {
-    write-host "Le disque" $VHDX "n'est pas assez fragmenté pour être traité" -ForegroundColor Green
+
+    try {
+        Mount-VHD $VHDX -ErrorAction Stop
+        Write-Host "Traitement de $VHDX" -ForegroundColor Cyan
+        Start-Sleep -Seconds 3
+
+        $Drivebrut = Get-Partition (Get-DiskImage -ImagePath $VHDX).Number | Get-Volume
+        $Drivefinal = $Drivebrut.DriveLetter + ':'
+
+        defrag $Drivefinal /h /x
+        defrag $Drivefinal /h /k /l
+        defrag $Drivefinal /h /x
+        defrag $Drivefinal /h /k
+
+        Dismount-VHD $VHDX -ErrorAction Stop
+        Start-Sleep -Seconds 3
+
+        Optimize-VHD $VHDX -Mode Full -ErrorAction Stop
+        Write-Host "Le disque $VHDX a été optimisé" -ForegroundColor Cyan
+    } catch {
+        Write-Host "Erreur lors du traitement du disque $VHDX : $_" -ForegroundColor Red
     }
 }
+
 exit
